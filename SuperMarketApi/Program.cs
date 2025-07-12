@@ -1,6 +1,11 @@
 var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
 
-app.MapGet("/", () => "Hello World!");
+builder.Services.AddControllers();
+
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
+builder.Services.AddScoped<IProductService, ProductService>();
+
+var app = builder.Build();
 
 app.Run();
