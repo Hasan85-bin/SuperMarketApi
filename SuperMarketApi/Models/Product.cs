@@ -10,13 +10,13 @@ namespace SuperMarketApi.Models
 
         public string brand { get; set; } = string.Empty;
 
-        public Category category { get; set; }
+        public CategoryEnum category { get; set; }
 
         public double price { get; set; }
 
     }
 
-    public enum Category
+    public enum CategoryEnum
     {
         Dairy,
         HealthProducts,

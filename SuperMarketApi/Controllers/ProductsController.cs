@@ -1,7 +1,10 @@
+using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using SuperMarketApi.DTOs;
+using SuperMarketApi.DTOs.Product;
 using SuperMarketApi.Services;
+using System.Reflection;
+
 
 namespace SuperMarketApi.Controllers
 {
@@ -10,17 +13,26 @@ namespace SuperMarketApi.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly IProductService _productService;
+        private readonly IMapper _mapper;
 
-        public ProductsController(IProductService productService)
+        public ProductsController(IProductService productService, IMapper mapper)
         {
             _productService = productService;
+            _mapper = mapper;
         }
 
         [HttpGet]
         public IActionResult GetAll([FromQuery] string? search, [FromQuery] string? category, [FromQuery] double? minPrice, [FromQuery] double? maxPrice)
         {
-            var products = _productService.GetAllProducts(search, category, minPrice, maxPrice);
-            return Ok(products);
+            try
+            {
+                var products = _productService.GetAllProducts(search, category, minPrice, maxPrice);
+                return Ok(products);
+            }
+            catch(BadHttpRequestException ex)
+            {
+                return BadRequest(ex.ToString());
+            }
         }
 
         [HttpGet("{id}")]
@@ -47,8 +59,23 @@ namespace SuperMarketApi.Controllers
             {
                 return NotFound();
             }
+            var updateDto = _mapper.Map<UpdateProductDto>(product);
+            patchDoc.ApplyTo(updateDto, ModelState);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            if (!TryValidateModel(updateDto))
+            {
+                return BadRequest(ModelState);
+            }
+            _mapper.Map(updateDto, product);
+            return Ok(product);
 
 
         }
+
+        
     }
 } 
