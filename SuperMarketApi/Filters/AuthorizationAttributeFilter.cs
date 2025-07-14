@@ -37,7 +37,8 @@ namespace SuperMarketApi.Filters
             }
             if (!authorized)
             {
-                context.Result = new ForbidResult();
+                // Return a custom 403 result to avoid authentication scheme errors
+                context.Result = new ObjectResult("Forbidden") { StatusCode = 403 };
             }
         }
     }

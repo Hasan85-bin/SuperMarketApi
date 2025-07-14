@@ -26,5 +26,20 @@ namespace SuperMarketApi.Controllers
         {
             return Ok("You are authorized as Admin!");
         }
+
+        // Endpoint for user login
+        [HttpPost("login")]
+        public IActionResult Login([FromBody] LoginUserDto loginUserDto)
+        {
+            try
+            {
+                var token = _userService.Login(loginUserDto);
+                return Ok(new { Token = token });
+            }
+            catch (BadHttpRequestException ex)
+            {
+                return Unauthorized(new { Error = ex.Message });
+            }
+        }
     }
 } 

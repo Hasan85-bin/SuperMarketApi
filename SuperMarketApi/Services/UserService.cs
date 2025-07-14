@@ -33,19 +33,25 @@ namespace SuperMarketApi.Services
             var user1 = new User
             {
                 ID = 1,
-                UserName = "John Doe",
+                UserName = "JohnDoe",
                 Email = "john.doe@example.com",
                 Phone = "123-456-7890",
-                Role = RoleEnum.Customer
+                Role = RoleEnum.Customer,
+                Password = HashPassword("password123"), // Set a hashed password
+                ShoppingCart = new Dictionary<Product, int>(),
+                PurchaseHistory = new List<Purchase>()
             };
 
             var user2 = new User
             {
                 ID = 2,
-                UserName = "Jane Smith",
+                UserName = "JaneSmith",
                 Email = "jane.smith@example.com",
                 Phone = "098-765-4321",
-                Role = RoleEnum.Customer
+                Role = RoleEnum.Admin,
+                Password = HashPassword("adminpass"), // Set a hashed password
+                ShoppingCart = new Dictionary<Product, int>(),
+                PurchaseHistory = new List<Purchase>()
             };
 
             _users.Add(user1);

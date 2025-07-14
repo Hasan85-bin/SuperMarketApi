@@ -13,6 +13,7 @@ public class User
     public string Token { get; set; } = string.Empty;
     public DateTime? TokenExpiry { get; set; } = null;
     public Dictionary<Product, int> ShoppingCart { get; set; } = new();
+    public List<Purchase> PurchaseHistory { get; set; } = new();
 }
 
 public enum RoleEnum{
