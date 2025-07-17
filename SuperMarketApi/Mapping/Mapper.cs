@@ -14,6 +14,7 @@ namespace SuperMarketApi.Mapping
             CreateMap<Product, ProductResponseDto>()
                 .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.category.ToString()));
             CreateMap<CreateUserDto, User>();
+            CreateMap<UpdateUserInfoDto, User>();
             // Add other User-related mappings as needed
         }
     }

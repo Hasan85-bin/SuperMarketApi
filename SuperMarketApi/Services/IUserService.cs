@@ -1,22 +1,18 @@
 using SuperMarketApi.DTOs;
+using SuperMarketApi.DTOs.User;
 using SuperMarketApi.Models;
+using System.Threading.Tasks;
 
 namespace SuperMarketApi.Services
 {
     public interface IUserService
     {
         // User authentication
-        string Login(LoginUserDto loginUserDto);
-        void Register(CreateUserDto createUserDto);
-
-        // Authorization
-        bool Authorize(string token, RoleEnum[] roles);
-
-        // Define user-related service methods here
-        // Example:
-        // IEnumerable<UserResponseDto> GetAllUsers();
-        // UserResponseDto? GetUserById(int id);
-        // UserResponseDto CreateUser(CreateUserDto createUserDto);
-        // bool DeleteUser(int id);
+        Task<string> LoginAsync(LoginUserDto loginUserDto);
+        Task RegisterAsync(CreateUserDto createUserDto);
+        Task UpdatePersonalInfoAsync(int userId, UpdateUserInfoDto updateDto);
+        Task ChangeUserRoleAsync(ChangeUserRoleDto dto);
+        Task<UserPersonalInfoDto?> GetPersonalInfoAsync(int userId);
+        Task ChangePasswordAsync(int userId, ChangePasswordDto dto);
     }
 } 

@@ -14,4 +14,7 @@ public record CreateUserDto
     [EmailAddress]
     [StringLength(100)]
     public string Email { get; init; } = string.Empty;
+    
+    [Phone]
+    public string? Phone { get; init; }
 } 

@@ -2,6 +2,12 @@ using Microsoft.Extensions.DependencyInjection;
 using SuperMarketApi.Mapping;
 using SuperMarketApi.Services;
 using SuperMarketApi.Filters;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.EntityFrameworkCore;
+using SuperMarketApi;
+using SuperMarketApi.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,8 +49,56 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // Register services
-builder.Services.AddSingleton<IProductService, ProductService>();
-builder.Services.AddSingleton<IUserService, UserService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+
+// Add distributed memory cache for session support
+builder.Services.AddDistributedMemoryCache();
+
+// Add session with 5-minute timeout
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(5);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+// Add this in the builder.Services section:
+builder.Services.AddDbContext<SuperMarketDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// JWT configuration values (for demo purposes, use secure storage in production)
+// IMPORTANT: The key must be at least 32 characters (256 bits) for HS256
+var jwtKey = "YourSuperSecretKey1234567890!@#$%^"; // 32+ chars
+var jwtIssuer = "SuperMarketApi";
+var jwtAudience = "SuperMarketApiUsers";
+
+// Add JWT authentication
+builder.Services.AddAuthentication(options =>
+{
+    // Set the default authentication scheme to JWT Bearer
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    // Configure JWT Bearer options
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+        ClockSkew = TimeSpan.Zero // No clock skew for demo
+    };
+});
+
+builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
@@ -56,6 +110,13 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Enable session middleware before authentication/authorization
+app.UseSession();
+
+// Enable authentication and authorization middleware
+app.UseAuthentication(); // Must come before UseAuthorization
+app.UseAuthorization();
 
 // app.UseCors("AllowAll");
 

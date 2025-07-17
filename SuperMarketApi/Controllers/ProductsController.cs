@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using SuperMarketApi.DTOs.Product;
@@ -22,11 +23,12 @@ namespace SuperMarketApi.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAll([FromQuery] string? search, [FromQuery] string? category, [FromQuery] double? minPrice, [FromQuery] double? maxPrice)
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAll([FromQuery] string? search, [FromQuery] string? category, [FromQuery] double? minPrice, [FromQuery] double? maxPrice)
         {
             try
             {
-                var products = _productService.GetAllProducts(search, category, minPrice, maxPrice);
+                var products = await _productService.GetAllProductsAsync(search, category, minPrice, maxPrice);
                 return Ok(products);
             }
             catch(BadHttpRequestException ex)
@@ -36,25 +38,28 @@ namespace SuperMarketApi.Controllers
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetById(int id)
+        [AllowAnonymous]
+        public async Task<IActionResult> GetById(int id)
         {
-            var product = _productService.GetProductById(id);
+            var product = await _productService.GetProductByIdAsync(id);
             if (product == null)
                 return NotFound();
             return Ok(product);
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody] CreateProductDto newProduct)
+        [Authorize(Roles = "Staff,Admin")]
+        public async Task<IActionResult> Create([FromBody] CreateProductDto newProduct)
         {
-            var product = _productService.AddProduct(newProduct);
+            var product = await _productService.AddProductAsync(newProduct);
             return CreatedAtAction(nameof(GetById), new { id = product.ID }, product);
         }
 
         [HttpPatch("{id}")]
-        public IActionResult Update(int id, [FromBody] JsonPatchDocument<UpdateProductDto> patchDoc)
+        [Authorize(Roles = "Staff,Admin")]
+        public async Task<IActionResult> Update(int id, [FromBody] JsonPatchDocument<UpdateProductDto> patchDoc)
         {
-            var product = _productService.GetProductById(id);
+            var product = await _productService.GetProductByIdAsync(id);
             if(product == null)
             {
                 return NotFound();
@@ -71,11 +76,18 @@ namespace SuperMarketApi.Controllers
                 return BadRequest(ModelState);
             }
             _mapper.Map(updateDto, product);
+            await _productService.UpdateProductAsync(id, updateDto);
             return Ok(product);
-
-
         }
 
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var deleted = await _productService.DeleteProductAsync(id);
+            if (!deleted) return NotFound();
+            return NoContent();
+        }
         
     }
 } 

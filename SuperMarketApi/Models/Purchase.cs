@@ -10,6 +10,9 @@ namespace SuperMarketApi.Models
         public int Quantity { get; set; }
         public DateTime PurchaseDate { get; set; }
         public double TotalPrice { get; set; }
+
+        // Foreign key for User
         public int UserID { get; set; }
+        public User User { get; set; } // Navigation property
     }
 } 
