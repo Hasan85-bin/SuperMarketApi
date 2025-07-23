@@ -12,5 +12,6 @@ namespace SuperMarketApi.Services
         Task<ProductResponseDto> AddProductAsync(CreateProductDto newProduct);
         Task<ProductResponseDto?> UpdateProductAsync(int id, UpdateProductDto updatedProduct);
         Task<bool> DeleteProductAsync(int id);
+
     }
 }

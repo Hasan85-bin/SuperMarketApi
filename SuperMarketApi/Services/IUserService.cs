@@ -14,5 +14,6 @@ namespace SuperMarketApi.Services
         Task ChangeUserRoleAsync(ChangeUserRoleDto dto);
         Task<UserPersonalInfoDto?> GetPersonalInfoAsync(int userId);
         Task ChangePasswordAsync(int userId, ChangePasswordDto dto);
+
     }
 } 

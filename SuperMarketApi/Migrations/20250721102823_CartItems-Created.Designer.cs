@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SuperMarketApi;
 
@@ -11,9 +12,11 @@ using SuperMarketApi;
 namespace SuperMarketApi.Migrations
 {
     [DbContext(typeof(SuperMarketDbContext))]
-    partial class SuperMarketDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250721102823_CartItems-Created")]
+    partial class CartItemsCreated
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -70,9 +73,6 @@ namespace SuperMarketApi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
                     b.HasKey("ID");
 
                     b.ToTable("Products");
@@ -84,8 +84,7 @@ namespace SuperMarketApi.Migrations
                             Brand = "FreshFarms",
                             Category = 5,
                             Price = 1.99,
-                            ProductName = "Apple",
-                            Quantity = 100
+                            ProductName = "Apple"
                         },
                         new
                         {
@@ -93,8 +92,7 @@ namespace SuperMarketApi.Migrations
                             Brand = "TropicalCo",
                             Category = 0,
                             Price = 0.98999999999999999,
-                            ProductName = "Milk",
-                            Quantity = 50
+                            ProductName = "Milk"
                         },
                         new
                         {
@@ -102,8 +100,7 @@ namespace SuperMarketApi.Migrations
                             Brand = "BerryBest",
                             Category = 2,
                             Price = 2.9900000000000002,
-                            ProductName = "Juice",
-                            Quantity = 75
+                            ProductName = "Juice"
                         });
                 });
 

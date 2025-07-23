@@ -53,6 +53,9 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IPurchaseCartRepository, PurchaseCartRepository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<ICartPurchaseService, CartPurchaseService>();
 
 // Add distributed memory cache for session support
 builder.Services.AddDistributedMemoryCache();
@@ -99,6 +102,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddHttpContextAccessor();
+
 
 var app = builder.Build();
 

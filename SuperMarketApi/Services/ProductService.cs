@@ -8,74 +8,77 @@ namespace SuperMarketApi.Services
 {
     public class ProductService : IProductService
     {
-        private readonly IProductRepository _productRepository;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private int _nextId = 4;
 
         
 
-        public ProductService(IMapper mapper, IProductRepository productRepository)
+        public ProductService(IUnitOfWork unitOfWork, IMapper mapper)
         {
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
-            _productRepository = productRepository;
         }
 
         public async Task<IEnumerable<ProductResponseDto>> GetAllProductsAsync(string? search = null, string? category = null, double? minPrice = null, double? maxPrice = null)
         {
-            var products = await _productRepository.GetAllAsync();
+            var products = await _unitOfWork.Products.GetAllAsync();
             var query = products.AsQueryable();
             if (!string.IsNullOrEmpty(search))
             {
-                query = query.Where(p => p.name.Contains(search) || p.brand.Contains(search));
+                query = query.Where(p => p.ProductName.Contains(search) || p.Brand.Contains(search));
             }
             if (!string.IsNullOrEmpty(category))
             {
                 if (Enum.TryParse<CategoryEnum>(category, ignoreCase: true, out var parsedCategory))
-                    query = query.Where(p => p.category == parsedCategory);
+                    query = query.Where(p => p.Category == parsedCategory);
                 else
                     throw new BadHttpRequestException("Invalid Category");
             }
             if (minPrice != null)
             {
-                query = query.Where(p => p.price >= minPrice);
+                query = query.Where(p => p.Price >= minPrice);
             }
             if (maxPrice != null)
             {
-                query = query.Where(p => p.price <= maxPrice);
+                query = query.Where(p => p.Price <= maxPrice);
             }
             return _mapper.Map<IEnumerable<ProductResponseDto>>(query);
         }
 
         public async Task<ProductResponseDto?> GetProductByIdAsync(int id)
         {
-            var product = await _productRepository.GetByIdAsync(id);
+            var product = await _unitOfWork.Products.GetByIdAsync(id);
             return product != null ? _mapper.Map<ProductResponseDto>(product) : null;
         }
 
-        public async Task<ProductResponseDto> AddProductAsync(CreateProductDto newProduct)
+        public async Task AddProductAsync(CreateProductDto newProduct)
         {
             var product = _mapper.Map<Product>(newProduct);
-            await _productRepository.AddAsync(product);
-            return _mapper.Map<ProductResponseDto>(product);
+            await _unitOfWork.Products.AddAsync(product);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task<ProductResponseDto?> UpdateProductAsync(int id, UpdateProductDto updatedProduct)
         {
-            var existingProduct = await _productRepository.GetByIdAsync(id);
+            var existingProduct = await _unitOfWork.Products.GetByIdAsync(id);
             if (existingProduct == null)
                 return null;
             _mapper.Map(updatedProduct, existingProduct);
-            await _productRepository.UpdateAsync(existingProduct);
+            await _unitOfWork.Products.UpdateAsync(existingProduct);
+            await _unitOfWork.SaveChangesAsync();
             return _mapper.Map<ProductResponseDto>(existingProduct);
         }
 
-        public async Task<bool> DeleteProductAsync(int id)
+        public async Task DeleteProductAsync(int id)
         {
-            var product = await _productRepository.GetByIdAsync(id);
-            if (product == null)
-                return false;
-            await _productRepository.DeleteAsync(id);
-            return true;
+            await _unitOfWork.Products.DeleteAsync(id);
+            await _unitOfWork.SaveChangesAsync();
+        }
+
+        public async Task<bool> ProductExists(int productId)
+        {
+            var product = await _unitOfWork.Products.GetByIdAsync(productId);
+            return product != null;
         }
 
 

@@ -11,5 +11,6 @@ namespace SuperMarketApi.Repositories
         Task AddAsync(Product product);
         Task UpdateAsync(Product product);
         Task DeleteAsync(int id);
+        Task<bool> ExistByIdAsync(int id);
     }
 } 

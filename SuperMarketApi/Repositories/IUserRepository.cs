@@ -15,5 +15,6 @@ namespace SuperMarketApi.Repositories
         Task<bool> ExistsByUserNameAsync(string userName, int? currentUserId = null);
         Task<bool> ExistsByEmailAsync(string email, int? currentUserId = null);
         Task<bool> ExistsByPhoneAsync(string phone, int? currentUserId = null);
+        Task<bool> ExistByIdAsync(int id);
     }
 } 

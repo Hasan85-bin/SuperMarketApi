@@ -7,6 +7,7 @@ namespace SuperMarketApi.DTOs.Product
         [Required, MaxLength(50), MinLength(3)] string Name,
         [Required, MaxLength(50), MinLength(3)] string Brand,
         [Required, EnumDataType(typeof(CategoryEnum))] CategoryEnum Category,
-        [Required, Range(0, double.MaxValue)] double Price
+        [Required, Range(0, double.MaxValue)] double Price,
+        [Required, Range(0, int.MaxValue)] int Quantity
     );
 } 

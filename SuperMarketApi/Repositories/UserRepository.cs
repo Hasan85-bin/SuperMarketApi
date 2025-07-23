@@ -32,13 +32,11 @@ namespace SuperMarketApi.Repositories
         public async Task AddAsync(User user)
         {
             await _context.Users.AddAsync(user);
-            await _context.SaveChangesAsync();
         }
 
         public async Task UpdateAsync(User user)
         {
             _context.Users.Update(user);
-            await _context.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(int id)
@@ -47,7 +45,6 @@ namespace SuperMarketApi.Repositories
             if (user != null)
             {
                 _context.Users.Remove(user);
-                await _context.SaveChangesAsync();
             }
         }
 
@@ -92,5 +89,12 @@ namespace SuperMarketApi.Repositories
                 return await _context.Users.AnyAsync(u => u.Phone == phone && u.ID != currentUserId.Value);
             }
         }
-    }
+
+        public async Task<bool> ExistByIdAsync(int id)
+        {
+            return await _context.Users.AnyAsync(u => u.ID == id);
+        }
+
+
+     }
 } 

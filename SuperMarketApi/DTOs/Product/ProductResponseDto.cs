@@ -7,6 +7,7 @@ namespace SuperMarketApi.DTOs.Product
         string Name,
         string Brand,
         string Category,
-        double Price
+        double Price,
+        int Quantity
     );
 } 

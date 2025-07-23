@@ -10,6 +10,7 @@ namespace SuperMarketApi
         public DbSet<User> Users { get; set; }
         public DbSet<Product> Products { get; set; }
         public DbSet<Purchase> Purchases { get; set; }
+        public DbSet<CartItem> CartItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -37,6 +38,19 @@ namespace SuperMarketApi
                 .HasForeignKey(p => p.UserID)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // CartItem relationships
+            modelBuilder.Entity<CartItem>()
+                .HasOne(ci => ci.User)
+                .WithMany()
+                .HasForeignKey(ci => ci.UserID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CartItem>()
+                .HasOne(ci => ci.Product)
+                .WithMany()
+                .HasForeignKey(ci => ci.ProductID)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // Seed initial users (passwords are SHA256 hashed as in UserService)
             modelBuilder.Entity<User>().HasData(
                 new User
@@ -46,7 +60,7 @@ namespace SuperMarketApi
                     Email = "john.doe@example.com",
                     Phone = "123-456-7890",
                     Role = RoleEnum.Customer,
-                    Password = "ef92b778bafe771e89245b89ecbc08a44a4e166c06659911881f383d4473e94f" // password123
+                    Password = "75K3eLr+dx6JJFuJ7LwIpEpOFmwGZZkRiB84PURz6U8=" // password123
                 },
                 new User
                 {
@@ -55,7 +69,7 @@ namespace SuperMarketApi
                     Email = "jane.smith@example.com",
                     Phone = "098-765-4321",
                     Role = RoleEnum.Admin,
-                    Password = "d033e22ae348aeb5660fc2140aec35850c4da997" // adminpass
+                    Password = "cTv9p4hwv50bJh9WUob4XpfuYU7+Xw+vfDTnyk9luso=" // adminpass
                 },
                 new User
                 {
@@ -64,7 +78,7 @@ namespace SuperMarketApi
                     Email = "staff@example.com",
                     Phone = "111-222-3333",
                     Role = RoleEnum.Staff,
-                    Password = "b362b9b8b6e9e5e6e2e6e2e6e2e6e2e6e2e6e2e6e2e6e2e6e2e6e2e6e2e6e2" // staffpass (example hash)
+                    Password = "R1Q4JO1IZ720I+SMoKaPJMoLeiVOkfP6iCLFlLtusxg=" // staffpass (example hash)
                 }
             );
 
@@ -73,26 +87,29 @@ namespace SuperMarketApi
                 new Product
                 {
                     ID = 1,
-                    name = "Apple",
-                    brand = "FreshFarms",
-                    category = CategoryEnum.Fruits,
-                    price = 1.99
+                    ProductName = "Apple",
+                    Brand = "FreshFarms",
+                    Category = CategoryEnum.Fruits,
+                    Price = 1.99,
+                    Quantity = 100
                 },
                 new Product
                 {
                     ID = 2,
-                    name = "Milk",
-                    brand = "TropicalCo",
-                    category = CategoryEnum.Dairy,
-                    price = 0.99
+                    ProductName = "Milk",
+                    Brand = "TropicalCo",
+                    Category = CategoryEnum.Dairy,
+                    Price = 0.99,
+                    Quantity = 50
                 },
                 new Product
                 {
                     ID = 3,
-                    name = "Juice",
-                    brand = "BerryBest",
-                    category = CategoryEnum.Drinks,
-                    price = 2.99
+                    ProductName = "Juice",
+                    Brand = "BerryBest",
+                    Category = CategoryEnum.Drinks,
+                    Price = 2.99,
+                    Quantity = 75
                 }
             );
         }

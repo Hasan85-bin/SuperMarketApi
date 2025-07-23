@@ -13,6 +13,6 @@ namespace SuperMarketApi.Models
 
         // Foreign key for User
         public int UserID { get; set; }
-        public User User { get; set; } // Navigation property
+        public User? User { get; set; } // Navigation property
     }
 } 

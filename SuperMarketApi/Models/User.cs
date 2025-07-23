@@ -21,14 +21,9 @@ public class User
     public List<Purchase> Purchases { get; set; } = new();
 
     [NotMapped]
-    public List<OrderItem> ShoppingCart { get; set; } = new();
+    public List<CartItem> ShoppingCart { get; set; } = new();
 
-    public class OrderItem
-    {
-        public int Id { get; set; } // Unique per cart item
-        public int ProductId { get; set; }
-        public int Quantity { get; set; }
-    }
+
 }
 
 public enum RoleEnum{

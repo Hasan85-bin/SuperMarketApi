@@ -17,19 +17,15 @@ namespace SuperMarketApi.Services
     public class UserService : IUserService
     {
         // Private fields - these hold our data and dependencies
-        private readonly IProductService _productService;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private int _lastId;
-        private int _nextPurchaseId;
-        private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IUserRepository _userRepository;
+        // private readonly IHttpContextAccessor _httpContextAccessor; // Removed as it's unused
+        // private readonly IUserRepository _userRepository; // Removed as it's now part of IUnitOfWork
 
         // Constructor - this is where we initialize our service
-        public UserService(IHttpContextAccessor httpContextAccessor, IProductService productService, IMapper mapper, IUserRepository userRepository)
+        public UserService(IUnitOfWork unitOfWork, IMapper mapper)
         {
-            _httpContextAccessor = httpContextAccessor;
-            _userRepository = userRepository;
-            _productService = productService;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
             // _users = new List<User>(); // Remove in-memory list usage
             // _lastId = 2;
@@ -68,7 +64,6 @@ namespace SuperMarketApi.Services
         //     _users.Add(user2);
         // }
 
-        #region Authentication
 
         private string HashPassword(string password)
         {
@@ -82,20 +77,21 @@ namespace SuperMarketApi.Services
 
         public async Task RegisterAsync(CreateUserDto createUserDto)
         {
-            if (await _userRepository.ExistsByUserNameAsync(createUserDto.UserName))
+            if (await _unitOfWork.Users.ExistsByUserNameAsync(createUserDto.UserName))
                 throw new BadHttpRequestException("Username already in use.");
-            if (await _userRepository.ExistsByEmailAsync(createUserDto.Email))
+            if (await _unitOfWork.Users.ExistsByEmailAsync(createUserDto.Email))
                 throw new BadHttpRequestException("Email already in use.");
-            if (!string.IsNullOrEmpty(createUserDto.Phone) && await _userRepository.ExistsByPhoneAsync(createUserDto.Phone))
+            if (!string.IsNullOrEmpty(createUserDto.Phone) && await _unitOfWork.Users.ExistsByPhoneAsync(createUserDto.Phone))
                 throw new BadHttpRequestException("Phone already in use.");
             var user = _mapper.Map<User>(createUserDto);
             user.Password = HashPassword(createUserDto.Password);
-            await _userRepository.AddAsync(user);
+            await _unitOfWork.Users.AddAsync(user);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task<string> LoginAsync(LoginUserDto loginUserDto)
         {
-            var user = await _userRepository.GetByUserNameAsync(loginUserDto.UserName);
+            var user = await _unitOfWork.Users.GetByUserNameAsync(loginUserDto.UserName);
             if (user == null)
             {
                 throw new BadHttpRequestException("Invalid UserName: UserName not found");
@@ -138,17 +134,18 @@ namespace SuperMarketApi.Services
 
         public async Task UpdatePersonalInfoAsync(int userId, UpdateUserInfoDto updateDto)
         {
-            if (await _userRepository.ExistsByEmailAsync(updateDto.Email, userId))
+            if (await _unitOfWork.Users.ExistsByEmailAsync(updateDto.Email, userId))
                 throw new BadHttpRequestException("Email already in use by another user.");
-            if (!string.IsNullOrEmpty(updateDto.Phone) && await _userRepository.ExistsByPhoneAsync(updateDto.Phone, userId))
+            if (!string.IsNullOrEmpty(updateDto.Phone) && await _unitOfWork.Users.ExistsByPhoneAsync(updateDto.Phone, userId))
                 throw new BadHttpRequestException("Phone already in use by another user.");
-            var user = await _userRepository.GetByIdAsync(userId);
+            var user = await _unitOfWork.Users.GetByIdAsync(userId);
             if (user == null)
             {
                 throw new BadHttpRequestException("Invalid User ID");
             }
             _mapper.Map(updateDto, user);
-            await _userRepository.UpdateAsync(user);
+            await _unitOfWork.Users.UpdateAsync(user);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task ChangeUserRoleAsync(ChangeUserRoleDto dto)
@@ -169,34 +166,37 @@ namespace SuperMarketApi.Services
                 throw new BadHttpRequestException("Invalid role value.");
             }
 
-            var user = await _userRepository.GetByUserNameAsync(dto.UserName);
+            var user = await _unitOfWork.Users.GetByUserNameAsync(dto.UserName);
             if (user == null)
             {
                 throw new BadHttpRequestException("User not found.");
             }
             user.Role = roleEnum;
-            await _userRepository.UpdateAsync(user);
+            await _unitOfWork.Users.UpdateAsync(user);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         public async Task ChangePasswordAsync(int userId, ChangePasswordDto dto)
         {
             if (dto.NewPassword != dto.RepeatNewPassword)
                 throw new BadHttpRequestException("New password and repeated password do not match.");
-            var user = await _userRepository.GetByIdAsync(userId);
+            if (dto.NewPassword.Length < 6)
+                throw new BadHttpRequestException("Password must be at least 6 characters long.");
+            var user = await _unitOfWork.Users.GetByIdAsync(userId);
             if (user == null)
                 throw new BadHttpRequestException("User not found.");
             var currentHashed = HashPassword(dto.CurrentPassword);
             if (user.Password != currentHashed)
                 throw new BadHttpRequestException("Current password is incorrect.");
             user.Password = HashPassword(dto.NewPassword);
-            await _userRepository.UpdateAsync(user);
+            await _unitOfWork.Users.UpdateAsync(user);
+            await _unitOfWork.SaveChangesAsync();
         }
 
-        #endregion
 
         public async Task<UserPersonalInfoDto?> GetPersonalInfoAsync(int userId)
         {
-            var user = await _userRepository.GetByIdAsync(userId);
+            var user = await _unitOfWork.Users.GetByIdAsync(userId);
             if (user == null) return null;
             return new UserPersonalInfoDto
             {
@@ -209,13 +209,7 @@ namespace SuperMarketApi.Services
         }
 
 
-        #region CartHandling
 
-        public void AddToCart(User.OrderItem order){
-            
-        }
-
-        #endregion
 
         // TODO: Implement all the interface methods here for User!
         // We'll add them step by step as you learn
