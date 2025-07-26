@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SuperMarketApi;
 
@@ -11,9 +12,11 @@ using SuperMarketApi;
 namespace SuperMarketApi.Migrations
 {
     [DbContext(typeof(SuperMarketDbContext))]
-    partial class SuperMarketDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250723060251_AddPostCodeAndStatusToPurchase")]
+    partial class AddPostCodeAndStatusToPurchase
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -115,12 +118,29 @@ namespace SuperMarketApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
+                    b.Property<string>("Brand")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Category")
+                        .HasColumnType("int");
+
                     b.Property<string>("PostCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("Price")
+                        .HasColumnType("float");
+
+                    b.Property<string>("ProductName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("PurchaseDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -136,41 +156,6 @@ namespace SuperMarketApi.Migrations
                     b.HasIndex("UserID");
 
                     b.ToTable("Purchases");
-                });
-
-            modelBuilder.Entity("SuperMarketApi.Models.PurchaseItem", b =>
-                {
-                    b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
-
-                    b.Property<string>("Brand")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Category")
-                        .HasColumnType("int");
-
-                    b.Property<double>("Price")
-                        .HasColumnType("float");
-
-                    b.Property<string>("ProductName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("PurchaseID")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.HasKey("ID");
-
-                    b.HasIndex("PurchaseID");
-
-                    b.ToTable("PurchaseItems");
                 });
 
             modelBuilder.Entity("User", b =>
@@ -252,7 +237,7 @@ namespace SuperMarketApi.Migrations
                         .IsRequired();
 
                     b.HasOne("User", "User")
-                        .WithMany("CartItems")
+                        .WithMany()
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -273,26 +258,8 @@ namespace SuperMarketApi.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("SuperMarketApi.Models.PurchaseItem", b =>
-                {
-                    b.HasOne("SuperMarketApi.Models.Purchase", "Purchase")
-                        .WithMany("Items")
-                        .HasForeignKey("PurchaseID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Purchase");
-                });
-
-            modelBuilder.Entity("SuperMarketApi.Models.Purchase", b =>
-                {
-                    b.Navigation("Items");
-                });
-
             modelBuilder.Entity("User", b =>
                 {
-                    b.Navigation("CartItems");
-
                     b.Navigation("Purchases");
                 });
 #pragma warning restore 612, 618

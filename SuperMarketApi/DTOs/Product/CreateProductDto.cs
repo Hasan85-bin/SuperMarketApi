@@ -4,11 +4,20 @@ using static SuperMarketApi.Models.Product;
 
 namespace SuperMarketApi.DTOs.Product
 {
-    public record CreateProductDto(
-        [Required, MaxLength(50), MinLength(3)] string Name,
-        [Required, MaxLength(50), MinLength(3)] string Brand,
-        CategoryEnum Category,
-        [Required, Range(0, double.MaxValue)] double Price,
-        [Required, Range(0, int.MaxValue)] int Quantity
-    );
+    public record CreateProductDto
+    {
+        [Required, MaxLength(50), MinLength(3)]
+        public string Name { get; init; } = string.Empty;
+        
+        [Required, MaxLength(50), MinLength(3)]
+        public string Brand { get; init; } = string.Empty;
+        
+        public CategoryEnum Category { get; init; }
+        
+        [Required, Range(0, double.MaxValue)]
+        public double Price { get; init; }
+        
+        [Required, Range(0, int.MaxValue)]
+        public int Quantity { get; init; }
+    }
 }

@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using SuperMarketApi.Services;
 using AutoMapper;
-using SuperMarketApi.DTOs;
+using SuperMarketApi.DTOs.Cart;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-using SuperMarketApi.DTOs.Cart;
 using SuperMarketApi.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -27,11 +26,11 @@ namespace SuperMarketApi.Controllers
 
         [HttpGet("cart")]
         [Authorize]
-        public async Task<ActionResult<IEnumerable<CartItem>>> GetCart()
+        public async Task<ActionResult<IEnumerable<CartItemResponseDto>>> GetCart()
         {
             var userId = GetUserIdFromClaims();
             var cart = await _cartPurchaseService.GetCartForUserAsync(userId);
-            return Ok(cart);
+            return Ok(_mapper.Map<IEnumerable<CartItemResponseDto>>(cart));
         }
 
         [HttpGet("cart/{itemId}")]
@@ -72,10 +71,10 @@ namespace SuperMarketApi.Controllers
 
         [HttpPost("purchase")]
         [Authorize]
-        public async Task<ActionResult> Purchase()
+        public async Task<ActionResult> Purchase([FromBody] PurchaseRequestDto dto)
         {
             var userId = GetUserIdFromClaims();
-            await _cartPurchaseService.Purchase(userId);
+            await _cartPurchaseService.Purchase(userId, dto.PostCode);
             return Ok();
         }
 
@@ -88,13 +87,7 @@ namespace SuperMarketApi.Controllers
             return Ok(history);
         }
 
-        [HttpGet("history/all")]
-        [Authorize(Roles = "Admin")]
-        public async Task<ActionResult<IEnumerable<Purchase>>> GetCompletePurchaseHistory()
-        {
-            var history = await _cartPurchaseService.GetCompletePurchaseHistory();
-            return Ok(history);
-        }
+        
 
         private int GetUserIdFromClaims()
         {

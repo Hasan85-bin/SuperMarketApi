@@ -17,11 +17,8 @@ public class User
     public string Email { get; set; } = string.Empty;
     public string? Phone { get; set; }
 
-    // Navigation property: one user can have many purchases
     public List<Purchase> Purchases { get; set; } = new();
-
-    [NotMapped]
-    public List<CartItem> ShoppingCart { get; set; } = new();
+    public List<CartItem> CartItems { get; set; } = new();
 
 
 }

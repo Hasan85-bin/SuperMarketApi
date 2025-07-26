@@ -51,11 +51,12 @@ namespace SuperMarketApi.Services
             return product != null ? _mapper.Map<ProductResponseDto>(product) : null;
         }
 
-        public async Task AddProductAsync(CreateProductDto newProduct)
+        public async Task<ProductResponseDto> AddProductAsync(CreateProductDto newProduct)
         {
             var product = _mapper.Map<Product>(newProduct);
             await _unitOfWork.Products.AddAsync(product);
             await _unitOfWork.SaveChangesAsync();
+            return _mapper.Map<ProductResponseDto>(product);
         }
 
         public async Task<ProductResponseDto?> UpdateProductAsync(int id, UpdateProductDto updatedProduct)
@@ -69,10 +70,11 @@ namespace SuperMarketApi.Services
             return _mapper.Map<ProductResponseDto>(existingProduct);
         }
 
-        public async Task DeleteProductAsync(int id)
+        public async Task<bool> DeleteProductAsync(int id)
         {
-            await _unitOfWork.Products.DeleteAsync(id);
+            var result = await _unitOfWork.Products.DeleteAsync(id);
             await _unitOfWork.SaveChangesAsync();
+            return result;
         }
 
         public async Task<bool> ProductExists(int productId)

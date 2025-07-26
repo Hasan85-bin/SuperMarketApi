@@ -26,13 +26,14 @@ namespace SuperMarketApi.Services
             var item = await _unitOfWork.PurchaseCarts.GetItemAsync(userId, itemId);
             if (item == null)
                 throw new BadHttpRequestException("Item NotFound");
-            await _unitOfWork.PurchaseCarts.DeleteItemAsync(item);
+            _unitOfWork.PurchaseCarts.DeleteItem(item);
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<CartItem>> GetCartForUserAsync(int userId)
+        public async Task<IEnumerable<CartItemResponseDto>> GetCartForUserAsync(int userId)
         {
-            return await _unitOfWork.PurchaseCarts.GetCartForUserAsync(userId, true);
+            var cartItems = await _unitOfWork.PurchaseCarts.GetCartForUserAsync(userId, true);
+            return _mapper.Map<IEnumerable<CartItemResponseDto>>(cartItems);
         }
 
         public async Task<CartItem> GetItemAsync(int userId, int itemId)
@@ -49,7 +50,7 @@ namespace SuperMarketApi.Services
         {
             var item = await GetItemAsync(userId, itemId);
             _mapper.Map(dto, item);
-            await _unitOfWork.PurchaseCarts.UpdateItemAsync(item);
+            _unitOfWork.PurchaseCarts.UpdateItem(item);
             await _unitOfWork.SaveChangesAsync();
         }
 
@@ -68,7 +69,7 @@ namespace SuperMarketApi.Services
             await _unitOfWork.SaveChangesAsync();
         }
 
-        public async Task Purchase(int userId)
+        public async Task Purchase(int userId, string postCode)
         {
             var cart = await _unitOfWork.PurchaseCarts.GetCartForUserAsync(userId, true);
             foreach (var cartItem in cart)
@@ -78,13 +79,15 @@ namespace SuperMarketApi.Services
                 if (cartItem.Quantity > cartItem.Product.Quantity)
                     throw new BadHttpRequestException($"Not enough stock for product {cartItem.Product.ProductName}. Available: {cartItem.Product.Quantity}");
             }
-            var newPurchases = _mapper.Map<List<Purchase>>(cart);
-            foreach (var purchase in newPurchases)
-            {
-                purchase.TotalPrice = purchase.Price * purchase.Quantity;
-                purchase.PurchaseDate = DateTime.UtcNow;
-            }
-            await _unitOfWork.PurchaseCarts.Purchase(newPurchases);
+            var newPurchase = new Purchase();
+            newPurchase.UserID = userId;
+            _mapper.Map(cart, newPurchase.Items);
+            newPurchase.PostCode = postCode;
+            newPurchase.PurchaseDate = DateTime.UtcNow;
+
+            foreach (var item in cart)
+                newPurchase.TotalPrice += item.Quantity * item.Product!.Price;
+            await _unitOfWork.PurchaseCarts.Purchase(newPurchase);
             foreach (var item in cart)
             {
                 item.Product!.Quantity -= item.Quantity;
@@ -99,10 +102,9 @@ namespace SuperMarketApi.Services
         }
 
 
-        public async Task<IEnumerable<Purchase>> GetCompletePurchaseHistory()
-        {
-            return await _unitOfWork.PurchaseCarts.GetCompletePurchaseHistory();
-        }
+
+
+
 
 
 

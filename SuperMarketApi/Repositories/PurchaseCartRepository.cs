@@ -17,11 +17,11 @@ public class PurchaseCartRepository : IPurchaseCartRepository
         var query = _context.CartItems.Where(c => c.UserID == userId);
         if (includeProduct)
         {
-            query.Include(c => c.Product);
+            query = query.Include(c => c.Product);
         }
         if (includeUser)
         {
-            query.Include(c => c.User);
+            query = query.Include(c => c.User);
         }
         return await query.ToListAsync();
     }
@@ -37,19 +37,19 @@ public class PurchaseCartRepository : IPurchaseCartRepository
         await _context.CartItems.AddAsync(item);
     }
 
-    public async Task UpdateItemAsync(CartItem item)
+    public void UpdateItem(CartItem item)
     {
         _context.CartItems.Update(item);
     }
 
-    public async Task DeleteItemAsync(CartItem item)
+    public void DeleteItem(CartItem item)
     {
         _context.Remove(item);
     }
 
-    public async Task Purchase(IEnumerable<Purchase> newPurchases)
+    public async Task Purchase(Purchase newPurchase)
     {
-        await _context.Purchases.AddRangeAsync(newPurchases);
+        await _context.Purchases.AddAsync(newPurchase);
     }
 
     public async Task<IEnumerable<Purchase>> GetPurchaseHistoryAsync(int userId)
@@ -57,8 +57,50 @@ public class PurchaseCartRepository : IPurchaseCartRepository
         return await _context.Purchases.Where(p => p.UserID == userId).ToListAsync();
     }
 
-    public async Task<IEnumerable<Purchase>> GetCompletePurchaseHistory()
+    public async Task<IEnumerable<Purchase>> GetDailyPurchaseHistory(DateOnly date)
     {
-        return await _context.Purchases.ToListAsync();
+        return await _context.Purchases.Where(p => DateOnly.FromDateTime(p.PurchaseDate.Date) == date ).ToListAsync();
     }
+
+    public async Task<Purchase?> GetLatestPendingRequest()
+    {
+        return await _context.Purchases.Include(p => p.Items).FirstOrDefaultAsync(p => p.Status == PurchaseStatus.Pending);
+    }
+
+    public async Task<Purchase?> GetPurchaseByIdAsync(int purchaseId)
+    {
+        return await _context.Purchases.FirstOrDefaultAsync(p => p.ID == purchaseId);
+    }
+
+    public void UpdatePurchase(Purchase purchase)
+    {
+        _context.Purchases.Update(purchase);
+    }
+
+    public async Task<IEnumerable<Purchase>> GetPurchasesFilteredAsync(
+        PurchaseStatus? status = null,
+        int? userId = null,
+        string? userName = null,
+        DateTime? from = null,
+        DateTime? to = null,
+        bool includeUser = false
+    )
+    {
+        var query = _context.Purchases.AsQueryable();
+        if (status.HasValue)
+            query = query.Where(p => p.Status == status.Value);
+        if (userId.HasValue)
+            query = query.Where(p => p.UserID == userId.Value);
+        if (!string.IsNullOrEmpty(userName))
+            query = query.Where(p => p.User != null && p.User.UserName == userName);
+        if (from.HasValue)
+            query = query.Where(p => p.PurchaseDate >= from.Value);
+        if (to.HasValue)
+            query = query.Where(p => p.PurchaseDate <= to.Value);
+        if (includeUser)
+            query = query.Include(p => p.User);
+        return await query.ToListAsync();
+    }
+
+
 }

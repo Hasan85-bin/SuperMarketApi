@@ -56,6 +56,7 @@ builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IPurchaseCartRepository, PurchaseCartRepository>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ICartPurchaseService, CartPurchaseService>();
+builder.Services.AddScoped<IStaffService, StaffService>();
 
 // Add distributed memory cache for session support
 builder.Services.AddDistributedMemoryCache();

@@ -34,13 +34,15 @@ namespace SuperMarketApi.Repositories
             _context.Products.Update(product);
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
             var product = await GetByIdAsync(id);
             if (product != null)
             {
                 _context.Products.Remove(product);
+                return true;
             }
+            return false;
         }
 
         public async Task<bool> ExistByIdAsync(int id)

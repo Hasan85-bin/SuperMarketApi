@@ -9,8 +9,9 @@ namespace SuperMarketApi
 
         public DbSet<User> Users { get; set; }
         public DbSet<Product> Products { get; set; }
-        public DbSet<Purchase> Purchases { get; set; }
         public DbSet<CartItem> CartItems { get; set; }
+        public DbSet<Purchase> Purchases { get; set; }
+        public DbSet<PurchaseItem> PurchaseItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -31,17 +32,24 @@ namespace SuperMarketApi
                 .HasIndex(u => u.Phone)
                 .IsUnique();
 
-            // User-Purchase: one-to-many, cascade delete
+            // User-PurchaseCart: one-to-many, cascade delete
             modelBuilder.Entity<Purchase>()
-                .HasOne(p => p.User)
+                .HasOne(pc => pc.User)
                 .WithMany(u => u.Purchases)
-                .HasForeignKey(p => p.UserID)
+                .HasForeignKey(pc => pc.UserID)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // CartItem relationships
+            // PurchasedCartItem relationships
+            modelBuilder.Entity<PurchaseItem>()
+                .HasOne(pci => pci.Purchase)
+                .WithMany(pc => pc.Items)
+                .HasForeignKey(pci => pci.PurchaseID)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // CartItem relationships (shopping cart only)
             modelBuilder.Entity<CartItem>()
                 .HasOne(ci => ci.User)
-                .WithMany()
+                .WithMany(u => u.CartItems)
                 .HasForeignKey(ci => ci.UserID)
                 .OnDelete(DeleteBehavior.Cascade);
 

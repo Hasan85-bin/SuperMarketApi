@@ -10,7 +10,7 @@ namespace SuperMarketApi.Repositories
         Task<IEnumerable<Product>> GetAllAsync();
         Task AddAsync(Product product);
         Task UpdateAsync(Product product);
-        Task DeleteAsync(int id);
+        Task<bool> DeleteAsync(int id);
         Task<bool> ExistByIdAsync(int id);
     }
 } 
