@@ -8,6 +8,7 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using SuperMarketApi;
 using SuperMarketApi.Repositories;
+using SuperMarketApi.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -112,6 +113,13 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseDeveloperExceptionPage();
+}
+else
+{
+    // Use custom exception handling middleware in production/release mode
+    app.UseExceptionHandler("/error");
+    app.UseExceptionHandling();
 }
 
 app.UseHttpsRedirection();

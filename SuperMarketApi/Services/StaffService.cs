@@ -20,26 +20,36 @@ namespace SuperMarketApi.Services
             _mapper = mapper;
         }
 
-        public async Task<Purchase> Send()
+        public async Task<UserPurchaseDto> Send()
         {
             var sendingPurchase = await _unitOfWork.PurchaseCarts.GetLatestPendingRequest();
             if (sendingPurchase == null)
                 throw new BadHttpRequestException("No New Purchase");
+            
+            // Business logic: Can only send purchases that are in Pending status
+            if (sendingPurchase.Status != PurchaseStatus.Pending)
+                throw new BadHttpRequestException($"Cannot send purchase with status: {sendingPurchase.Status}. Only Pending purchases can be sent.");
+            
             sendingPurchase.Status = PurchaseStatus.Sent;
             _unitOfWork.PurchaseCarts.UpdatePurchase(sendingPurchase);
             await _unitOfWork.SaveChangesAsync();
-            return sendingPurchase;
+            return _mapper.Map<UserPurchaseDto>(sendingPurchase);
         }
 
-        public async Task<Purchase> Deliver(int purchaseId)
+        public async Task<UserPurchaseDto> Deliver(int purchaseId)
         {
-            var deliveringPurchase = await _unitOfWork.PurchaseCarts.GetPurchaseByIdAsync(purchaseId);
+            var deliveringPurchase = await _unitOfWork.PurchaseCarts.GetPurchaseByIdAsync(purchaseId, true, true);
             if (deliveringPurchase == null)
                 throw new BadHttpRequestException("Purchase Not Found");
+            
+            // Business logic: Can only deliver purchases that are in Sent status
+            if (deliveringPurchase.Status != PurchaseStatus.Sent)
+                throw new BadHttpRequestException($"Cannot deliver purchase with status: {deliveringPurchase.Status}. Only Sent purchases can be delivered.");
+            
             deliveringPurchase.Status = PurchaseStatus.Delivered;
             _unitOfWork.PurchaseCarts.UpdatePurchase(deliveringPurchase);
             await _unitOfWork.SaveChangesAsync();
-            return deliveringPurchase;
+            return _mapper.Map<UserPurchaseDto>(deliveringPurchase);
         }
 
         public async Task<IEnumerable<UserPurchaseDto>> GetPurchasesFilteredAsync(
@@ -50,14 +60,14 @@ namespace SuperMarketApi.Services
             DateTime? to = null
         )
         {
-            var purchases = await _unitOfWork.PurchaseCarts.GetPurchasesFilteredAsync(status, userId, userName, from, to, includeUser: true);
+            var purchases = await _unitOfWork.PurchaseCarts.GetPurchasesFilteredAsync(status, userId, userName, from, to, includeUser: true, includeItems: true);
             return _mapper.Map<List<UserPurchaseDto>>(purchases);
         }
 
         public async Task<UserPurchaseDto?> GetPurchaseByIdAsync(int purchaseId)
         {
            
-            var purchase = await _unitOfWork.PurchaseCarts.GetPurchaseByIdAsync(purchaseId);
+            var purchase = await _unitOfWork.PurchaseCarts.GetPurchaseByIdAsync(purchaseId, true, true);
             return purchase == null ? null : _mapper.Map<UserPurchaseDto>(purchase);
         }
     }

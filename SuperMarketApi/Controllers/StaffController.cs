@@ -23,14 +23,14 @@ namespace SuperMarketApi.Controllers
 
 
 
-        [HttpPost("send-latest")]
-        public async Task<ActionResult<Purchase>> SendLatestPendingPurchase()
+        [HttpPatch("send-latest")]
+        public async Task<ActionResult<UserPurchaseDto>> SendLatestPendingPurchase()
         {
             var purchase = await _staffService.Send();
             return Ok(purchase);
         }
 
-        [HttpPost("deliver/{purchaseId}")]
+        [HttpPatch("deliver/{purchaseId}")]
         public async Task<ActionResult<Purchase>> DeliverPurchase(int purchaseId)
         {
             var purchase = await _staffService.Deliver(purchaseId);

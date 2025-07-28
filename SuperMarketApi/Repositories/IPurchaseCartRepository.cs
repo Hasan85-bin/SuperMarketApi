@@ -12,9 +12,7 @@ namespace SuperMarketApi.Repositories
         void UpdateItem(CartItem item);
         void DeleteItem(CartItem item);
         Task Purchase(Purchase newPurchase);
-        Task<IEnumerable<Purchase>> GetPurchaseHistoryAsync(int userId);
-        Task<IEnumerable<Purchase>> GetDailyPurchaseHistory(DateOnly date);
-        Task<Purchase?> GetPurchaseByIdAsync(int purchaseId);
+        Task<Purchase?> GetPurchaseByIdAsync(int purchaseId, bool includeUser, bool includeItems);
         Task<Purchase?> GetLatestPendingRequest();
         void UpdatePurchase(Purchase purchase);
         Task<IEnumerable<Purchase>> GetPurchasesFilteredAsync(
@@ -23,8 +21,8 @@ namespace SuperMarketApi.Repositories
             string? userName = null,
             DateTime? from = null,
             DateTime? to = null,
-            bool includeUser = false
+            bool includeUser = false,
+            bool includeItems = false
         );
-
     }
 } 

@@ -21,6 +21,8 @@ namespace SuperMarketApi.Mapping
             CreateMap<CartItemUpdateDto, CartItem>();
             CreateMap<CartItem, PurchaseItem>()
                 .ForMember(dest => dest.ID, opt => opt.Ignore())
+                .ForMember(dest => dest.PurchaseID, opt => opt.Ignore())
+                .ForMember(dest => dest.Purchase, opt => opt.Ignore())
                 .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product!.ProductName))
                 .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Product!.Price))
                 .ForMember(dest => dest.Brand, opt => opt.MapFrom(src => src.Product!.Brand))
@@ -28,8 +30,9 @@ namespace SuperMarketApi.Mapping
                 
             CreateMap<Purchase, UserPurchaseDto>()
                 .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.Status.ToString()));
+            CreateMap<Purchase, PurchaseResponseDto>();
             CreateMap<User, StaffUserDto>();
-            CreateMap<PurchaseItem, PurchaseItemDto>()
+            CreateMap<PurchaseItem, DTOs.Staff.PurchaseItemDto>()
                 .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category.ToString()));
             
             // New mappings for cart response

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using SuperMarketApi.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace SuperMarketApi.Controllers
 {
@@ -30,12 +31,12 @@ namespace SuperMarketApi.Controllers
         {
             var userId = GetUserIdFromClaims();
             var cart = await _cartPurchaseService.GetCartForUserAsync(userId);
-            return Ok(_mapper.Map<IEnumerable<CartItemResponseDto>>(cart));
+            return Ok(cart);
         }
 
         [HttpGet("cart/{itemId}")]
         [Authorize]
-        public async Task<ActionResult<CartItem>> GetCartItem(int itemId)
+        public async Task<ActionResult<CartItemResponseDto>> GetCartItem(int itemId)
         {
             var userId = GetUserIdFromClaims();
             var item = await _cartPurchaseService.GetItemAsync(userId, itemId);
@@ -80,7 +81,7 @@ namespace SuperMarketApi.Controllers
 
         [HttpGet("history")]
         [Authorize]
-        public async Task<ActionResult<IEnumerable<Purchase>>> GetPurchaseHistory()
+        public async Task<ActionResult<IEnumerable<PurchaseResponseDto>>> GetPurchaseHistory()
         {
             var userId = GetUserIdFromClaims();
             var history = await _cartPurchaseService.GetPurchaseHistoryForUser(userId);

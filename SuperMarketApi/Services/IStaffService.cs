@@ -1,3 +1,4 @@
+using SuperMarketApi.DTOs.Staff;
 using SuperMarketApi.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -16,8 +17,8 @@ namespace SuperMarketApi.Services
         );
 
         Task<DTOs.Staff.UserPurchaseDto?> GetPurchaseByIdAsync(int purchaseId);
-        Task<Purchase> Send();
-        Task<Purchase> Deliver(int purchaseId);
+        Task<UserPurchaseDto> Send();
+        Task<UserPurchaseDto> Deliver(int purchaseId);
     }
 
 

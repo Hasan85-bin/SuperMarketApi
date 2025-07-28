@@ -52,24 +52,21 @@ public class PurchaseCartRepository : IPurchaseCartRepository
         await _context.Purchases.AddAsync(newPurchase);
     }
 
-    public async Task<IEnumerable<Purchase>> GetPurchaseHistoryAsync(int userId)
-    {
-        return await _context.Purchases.Where(p => p.UserID == userId).ToListAsync();
-    }
 
-    public async Task<IEnumerable<Purchase>> GetDailyPurchaseHistory(DateOnly date)
-    {
-        return await _context.Purchases.Where(p => DateOnly.FromDateTime(p.PurchaseDate.Date) == date ).ToListAsync();
-    }
 
     public async Task<Purchase?> GetLatestPendingRequest()
     {
         return await _context.Purchases.Include(p => p.Items).FirstOrDefaultAsync(p => p.Status == PurchaseStatus.Pending);
     }
 
-    public async Task<Purchase?> GetPurchaseByIdAsync(int purchaseId)
+    public async Task<Purchase?> GetPurchaseByIdAsync(int purchaseId, bool includeUser, bool includeItems)
     {
-        return await _context.Purchases.FirstOrDefaultAsync(p => p.ID == purchaseId);
+        var query = _context.Purchases.AsQueryable();
+        if (includeItems)
+            query = query.Include(p => p.Items);
+        if (includeUser)
+            query = query.Include(p => p.User);
+        return await query.FirstOrDefaultAsync(p => p.ID == purchaseId);
     }
 
     public void UpdatePurchase(Purchase purchase)
@@ -83,7 +80,8 @@ public class PurchaseCartRepository : IPurchaseCartRepository
         string? userName = null,
         DateTime? from = null,
         DateTime? to = null,
-        bool includeUser = false
+        bool includeUser = false,
+        bool includeItems = false
     )
     {
         var query = _context.Purchases.AsQueryable();
@@ -99,6 +97,8 @@ public class PurchaseCartRepository : IPurchaseCartRepository
             query = query.Where(p => p.PurchaseDate <= to.Value);
         if (includeUser)
             query = query.Include(p => p.User);
+        if (includeItems)
+            query = query.Include(p => p.Items);
         return await query.ToListAsync();
     }
 
